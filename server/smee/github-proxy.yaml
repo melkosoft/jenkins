@@ -1,0 +1,46 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smee-cm
+  namespace: devops
+data:
+  webhook_proxy_url: "https://smee.io/1234567890"
+  jenkins_webhook_url: "http://jenkins/github-webhook/"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-proxy
+  namespace: devops
+  labels:
+    app: github-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: github-proxy
+  template:
+    metadata:
+      labels:
+        app: github-proxy
+    spec:
+      containers:
+        - name: github-proxy
+          image: $REGISTRY/k8s-tools/smee-githubproxy:0.0.2
+          command: ["smee"]
+          args:  [" -u", "SMEE_WEBHOOK_PROXY_URL", " -t",  "JENKINS_WEBHOOK_URL"]
+          env:
+            - name: SMEE_WEBHOOK_PROXY_URL
+              valueFrom: 
+                configMapKeyRef:
+                  name: smee-cm
+                  key: webhook_proxy_url
+            - name: JENKINS_WEBHOOK_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smee-cm
+                  key: jenkins_webhook_url
+      imagePullSecrets:
+        - name: registrypullsecret   
+

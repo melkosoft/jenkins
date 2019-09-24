@@ -1,0 +1,57 @@
+#ROM openjdk:8-jdk-alpine 
+#FROM python:3.6-alpine
+FROM openjdk:8-jdk-alpine
+MAINTAINER Mike Mamaenko
+
+# Install OpenJDK
+ENV LANG C.UTF-8
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/latest-stable/community' >> /etc/apk/repositories
+RUN apk update && apk add --update --no-cache openrc jq nodejs npm curl \
+    git openssh-client openssl cifs-utils docker \
+    py-pip  python-dev libffi-dev openssl-dev gcc libc-dev make &&\
+    pip install docker-compose
+
+#    pip install -r /tmp/requirements.txt -U --ignore-installed six
+
+# Configure Jenkins Slave agent
+ENV HOME /home/jenkins 
+RUN addgroup -S -g 1000 jenkins
+RUN adduser -S -u 1000 -h $HOME -G jenkins jenkins &&\
+    addgroup jenkins docker &&\
+    rc-update add docker boot && service docker start 
+
+# Add docker and docker-compose
+#ARG DOCKER_VERSION=18.06.1-ce
+ARG DOCKER_COMPOSE_VERSION=1.23.1
+#RUN curl -fsSL https://download.docker.com/linux/static/stable/`uname -m`/docker-$DOCKER_VERSION.tgz | tar --strip-components=1 -xz -C /usr/local/bin docker/docker
+RUN curl -fsSL https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose
+
+# Add the jenkins user to sudoers
+#RUN echo "jenkins  ALL=(ALL)  ALL" >> etc/sudoers
+LABEL Description="This is a base image, which provides the Jenkins agent executable (slave.jar)" Vendor="Jenkins project" Version="3.14"
+
+ARG VERSION=3.29 
+ARG AGENT_WORKDIR=/home/jenkins/agent 
+RUN curl --create-dirs -sSLo /usr/share/jenkins/slave.jar https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/${VERSION}/remoting-${VERSION}.jar \
+  && chmod 755 /usr/share/jenkins \
+  && chmod 644 /usr/share/jenkins/slave.jar 
+#RUN sed -i 's|session required pam_loginuid.so|session optional pam_loginuid.so|g' /etc/pam.d/sshd
+COPY jenkins-slave /usr/local/bin/jenkins-slave
+RUN chmod +x /usr/local/bin/jenkins-slave
+RUN echo $JAVA_HOME > /tmp/java_home
+#COPY HP_Inc_Private_SSL_CA.509.pem /tmp/HP_Inc_Private_SSL_CA.509.pem
+#RUN keytool -keystore /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts -storepass changeit -noprompt -trustcacerts -import -alias hpcert -file /tmp/HP_Inc_Private_SSL_CA.509.pem
+USER jenkins 
+ENV AGENT_WORKDIR=${AGENT_WORKDIR} 
+RUN mkdir /home/jenkins/.jenkins \
+   && mkdir -p ${AGENT_WORKDIR}
+VOLUME /home/jenkins/.jenkins
+VOLUME ${AGENT_WORKDIR}
+WORKDIR /home/jenkins
+
+#EXPOSE 22
+
+#CMD ["ping","127.0.0.1"]
+ENTRYPOINT ["/usr/local/bin/jenkins-slave"]
+#USER root
+#CMD ["ping", "127.0.0.1"]

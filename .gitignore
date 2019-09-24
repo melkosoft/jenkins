@@ -1,0 +1,4 @@
+.git
+*secret.yaml
+server/ngrok/image/ngrok.docker/ngrok
+

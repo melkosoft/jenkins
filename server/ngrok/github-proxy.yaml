@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-proxy
+  namespace: devops
+  labels:
+    app: github-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: github-proxy
+  template:
+    metadata:
+      labels:
+        app: github-proxy
+    spec:
+      containers:
+        - name: github-proxy
+          image: $REGISTRY/k8s-tools/ngrok-githubproxy:0.0.1
+          imagePullPolicy: Always
+          args: ["ngrok", "start", "--all", "--config", "/etc/ngrok/ngrok.yaml", "--log", "stdout"]
+          env:
+            - name: ORG
+              valueFrom:
+                secretKeyRef:
+                  name: ngrok
+                  key: org
+            - name: AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: ngrok
+                  key: auth
+          volumeMounts:
+           - mountPath: /etc/ngrok
+             readOnly: true
+             name: ngrok-config
+           - mountPath: /var/log/ngrok
+             name: log
+      volumes:
+       - name: ngrok-config
+         configMap:
+           name: ngrok-cm
+           items:
+            - key: ngrok.yaml
+              path: ngrok.yaml
+       - name: log
+         emptyDir: {}
+      imagePullSecrets:
+        - name: registrypullsecret   
+

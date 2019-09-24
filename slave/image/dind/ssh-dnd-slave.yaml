@@ -1,0 +1,79 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    iam.amazonaws.com/allowed-roles: | 
+      ["arn:aws:iam::XXXXXXXX:role/my_role"]
+  name: mikem
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh-slave
+  namespace: test-space
+  labels:
+    app: ssh-slave
+spec:
+    replicas: 1
+    selector:
+       matchLabels:
+         app: ssh-slave
+    template:
+      metadata:
+        annotations:
+           iam.amazonaws.com/role: arn:aws:iam::XXXXXXXXXXX:role/my_role
+        labels:
+          app: ssh-slave
+      spec:
+        containers:
+          - name: ssh-slave
+            image: registry/jenkins-slave
+            ports:
+              - containerPort: 22
+            resources:
+              requests:
+                memory: 1Gi
+                cpu: 1
+            env:
+              - name: JENKINS_SLAVE_SSH_PUBKEY
+                valueFrom:
+                  secretKeyRef:
+                    name: jenkins-ssh-secrets
+                    key: jenkins_rsa.pub
+              - name: POD_IP
+                valueFrom:
+                  fieldRef:
+                     fieldPath: status.podIP
+              - name: DOCKER_HOST
+                value: tcp://localhost:2375
+          - name: dind
+            image: docker:18.05-dind
+            securityContext:
+               privileged: true
+            volumeMounts:
+             - name: dind-storage
+               mountPath: /var/lib/docker
+        volumes:
+          - name: dind-storage
+            emptyDir: {}
+        imagePullSecrets:
+          - name: registrypullsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ssh-slave
+  name: ssh-slave
+  namespace: mikem
+spec:
+  ports:
+  - name: ssh
+    port: 22
+    protocol: TCP
+    targetPort: 22
+  selector:
+    app: ssh-slave
+  type: LoadBalancer

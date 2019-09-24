@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+import os
+import baker
+import json
+import requests
+import configparser
+
+config = configparser.ConfigParser()
+config.read('jenkins.ini') or exit("Missing jenkins.ini")
+
+JENKINS_HOST  = config["global"]["jenkins_server"] 
+JENKINS_PROTO = config["global"]["jenkins_proto"] 
+JENKINS_PORT  = config["global"]["jenkins_port"] 
+JENKINS_URL   = JENKINS_PROTO + '://' + JENKINS_HOST + ':' + JENKINS_PORT
+USERNAME      = config.get("global", "username") if config.has_option('global','username') else "" 
+PASSWORD      = config.get("global", "password") if config.has_option('global', 'password') else ""
+
+
+def _get_job_names(url, prefix = []):
+    jobs = requests.get(url + '/api/json', auth=(USERNAME,PASSWORD))
+    data = []
+    for job in jobs.json().get('jobs'):
+        if 'color' in job:                                                  # it is not folder
+            if job['color'] != 'disabled':                                  # job is not disabled
+                if list(filter(lambda x: job['name'].startswith(x), prefix)):   
+                    data.append({'{#JOBNAME}' : job.get('name') })
+        else:
+            data += _get_job_names(job['url'], prefix)                      # check jobs inside folder
+    return data
+
+def _discovery(prefix, projects=["All"]):
+    data = [] 
+    for prj in projects:
+        data += _get_job_names(JENKINS_URL + '/view/' + prj, prefix = prefix)
+    return { 'data' : data }
+
+def _get_node_names():
+    url = JENKINS_URL + '/computer/api/json'
+    data = []
+    nodes = requests.get(url, auth = (USERNAME, PASSWORD))
+    for node in nodes.json().get("computer"):
+        data.append({'{#NODENAME}' : node.get('displayName')})
+    return {'data' : data }
+
+# Node data:
+# 1. Current status: online, offline
+# 2. Jobs on Nodes: No of busy executors, No of idle executors, No of queued jobs
+
+# Job data:
+# 1. % of failed builds
+# 2. Job status: building, failed, success
+# 3. Last build duration
+# 4. build start time
+# 5. Queue duration????
+
+# Discover new Nodes
+@baker.command
+def node_discovery():
+    return _get_node_names()
+
+# Discover new jobs
+@baker.command
+def job_discovery(prefix="", projects="All"):
+    return _discovery(prefix=prefix.split(","), projects=projects.split(","))
+
+
+if __name__ == "__main__":
+    baker.run()
+
