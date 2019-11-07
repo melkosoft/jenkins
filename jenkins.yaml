@@ -5,4 +5,4 @@ jenkins:
    - "Ping"
    securityRealm:
       local:
-         allowSignup: false
+         allow Signup: false
