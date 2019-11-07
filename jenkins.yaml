@@ -3,6 +3,4 @@ jenkins:
    agentProtocols:
    - "JNLP4-connect"
    - "Ping"
-   securityRealm:
-      local:
-         allow Signup: false
+
