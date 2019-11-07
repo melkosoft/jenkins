@@ -1,0 +1,8 @@
+jenkins:
+   systemMessage: "Welcome to my Jenkins instance"
+   agentProtocols:
+   - "JNLP4-connect"
+   - "Ping"
+   securityRealm:
+      local:
+         allowSignup: false
