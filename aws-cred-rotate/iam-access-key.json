@@ -1,0 +1,14 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+                "iam:DeleteAccessKey",
+                "iam:CreateAccessKey",
+                "iam:ListAccessKeys"
+      ],
+            "Resource": "arn:aws:iam::846014624907:user/*-jenkins"
+    }
+  ]
+}

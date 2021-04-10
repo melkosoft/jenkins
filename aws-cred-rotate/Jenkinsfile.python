@@ -1,0 +1,19 @@
+pipeline {
+  agent any
+  stages {
+    stage("Rotate keys") {
+      agent {
+        node {
+          label "awscli"
+        }
+      }
+      steps {
+         script {
+            withAWS( credentials: 'main-jenkins', region: 'us-west-2') {
+              sh 'python rotate_python.py'
+            }
+         }
+      }
+    }
+  }
+}

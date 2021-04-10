@@ -1,0 +1,13 @@
+method com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl getAccessKey
+method com.cloudbees.plugins.credentials.Credentials getScope
+method com.cloudbees.plugins.credentials.CredentialsStore updateCredentials com.cloudbees.plugins.credentials.domains.Domain com.cloudbees.plugins.credentials.Credentials com.cloudbees.plugins.credentials.Credentials
+method com.cloudbees.plugins.credentials.SystemCredentialsProvider getStore
+method com.cloudbees.plugins.credentials.common.IdCredentials getId
+method com.cloudbees.plugins.credentials.common.StandardCredentials getDescription
+method jenkins.model.Jenkins getExtensionList java.lang.String
+new com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl com.cloudbees.plugins.credentials.CredentialsScope java.lang.String java.lang.String java.lang.String java.lang.String java.lang.String java.lang.String
+new java.lang.ClassCastException java.lang.String
+staticMethod com.cloudbees.plugins.credentials.CredentialsProvider lookupCredentials java.lang.Class hudson.model.ItemGroup
+staticMethod com.cloudbees.plugins.credentials.domains.Domain global
+staticMethod java.lang.System getenv java.lang.String
+staticMethod jenkins.model.Jenkins getInstance

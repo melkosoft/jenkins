@@ -1,0 +1,22 @@
+pipeline {
+  agent any
+  stages {
+    environment {
+        API_TOKEN = credentials('api_access_token')
+    }
+    stage("Rotate keys") {
+      agent {
+        node {
+          label "awscli"
+        }
+      }
+      steps {
+         script {
+            withAWS( credentials: 'main-jenkins', region: 'us-west-2') {
+              sh 'aws/keyrotate/rotate_system.sh'
+            }
+         }
+      }
+    }
+  }
+}
