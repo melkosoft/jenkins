@@ -17,7 +17,7 @@ pipeline {
        }
        steps {
           script {
-             def code = load 'credentials_groovy.groovy'
+             def code = load 'aws-cred-rotate/credentials_groovy.groovy'
              code.updateCredential(env.MY_SCRIPT_RETURN)
           }
        }
