@@ -8,6 +8,7 @@ pipeline {
     stage("Rotate keys") {
       steps {
          withAWS( credentials: 'main-jenkins', region: 'us-west-2') {
+           sh 'chmod +x aws-cred-rotate/rotate_master_1.sh'
            sh 'aws-cred-rotate/rotate_master_1.sh -i test1-jenkins -u test1-jenkins -d 0'
          }
       }
