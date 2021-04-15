@@ -8,7 +8,7 @@ pipeline {
     stage("Rotate keys") {
       steps {
          withAWS( credentials: 'main-jenkins', region: 'us-west-2') {
-           sh 'aws/keyrotate/rotate_master_1.sh -i test2-jenkins -u test2-jenkins -d 0'
+           sh 'aws/keyrotate/rotate_master_1.sh -i test1-jenkins -u test1-jenkins -d 0'
          }
       }
     }
