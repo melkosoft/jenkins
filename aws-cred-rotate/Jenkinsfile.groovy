@@ -10,9 +10,9 @@ pipeline {
       steps {
          script {
             withAWS( credentials: 'main-jenkins', region: 'us-west-2') {
-              sh 'rotate_groovy.sh -i test2-jenkins -u test2-jenkins -d 0 -o params.txt'
+              sh 'aws-cred-rotate/rotate_groovy.sh -i test1-jenkins -u test1-jenkins -d 0 -o params.txt'
             }
-            FOOBAR = readFile('aws/keyrotate/params.txt').trim()
+            FOOBAR = readFile('aws-cred-rotate/params.txt').trim()
          }
       }
     }
