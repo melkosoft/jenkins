@@ -4,7 +4,7 @@ pipeline {
     stage("Rotate keys") {
       agent {
         node {
-          label "awscli"
+          label "master"
         }
       }
       steps {
