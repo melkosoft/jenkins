@@ -2,11 +2,6 @@ pipeline {
   agent any
   stages {
     stage("Rotate keys") {
-      agent {
-        node {
-          label "master"
-        }
-      }
       steps {
          script {
             withAWS( credentials: 'main-jenkins', region: 'us-west-2') {
@@ -17,11 +12,6 @@ pipeline {
       }
     }
     stage("Stage Execute") {
-      agent {
-        node {
-          label "master"
-        }
-      }
        environment {
           MY_SCRIPT_RETURN = "${FOOBAR}"
        }
